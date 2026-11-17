@@ -2,8 +2,9 @@ name: 更新「本周看什么」订阅源
 
 on:
   schedule:
-    # 每天 00:30 UTC = 北京时间 08:30；每周五下午发新一期，次日早晨即可拿到
+    # 北京时间 08:30 与 20:30 各一次（UTC 00:30 / 12:30）
     - cron: "30 0 * * *"
+    - cron: "30 12 * * *"
   push:
     branches: [main]
     paths-ignore: [feed.xml]
