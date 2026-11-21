@@ -75,11 +75,15 @@ def fetch_site_feed() -> list[dict]:
         date = field("pubDate").strip()
         if not link or not title:
             continue
+        # 少数派部分文章用 slug 而非数字 id（如 /post/xxx-macos-27-3），跳过这类
+        m = re.search(r"/post/(\d+)", link)
+        if not m:
+            continue
         try:
             ts = int(time.mktime(time.strptime(date, "%a, %d %b %Y %H:%M:%S %z")))
         except (ValueError, OverflowError):
             ts = 0
-        out.append({"id": int(link.rstrip("/").split("/")[-1]), "title": title,
+        out.append({"id": int(m.group(1)), "title": title,
                     "released_time": ts, "summary": re.sub(r"<[^>]+>", "", field("description")),
                     "banner": ""})
     return out
@@ -145,10 +149,15 @@ def main() -> int:
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "feed.xml")
     self_url = os.environ.get("FEED_URL", "").strip()
     try:
-        articles = normalize(fetch_tagged() + fetch_site_feed())
-    except Exception as exc:  # 取数失败时保留旧 feed，不覆盖
+        articles = fetch_tagged()
+    except Exception as exc:  # 主数据源失败时保留旧 feed，不覆盖
         print(f"抓取失败：{exc}", file=sys.stderr)
         return 1
+    try:
+        articles += fetch_site_feed()  # 兜底源，失败不影响主流程
+    except Exception as exc:
+        print(f"整站 feed 兜底失败，已忽略：{exc}", file=sys.stderr)
+    articles = normalize(articles)
     if not articles:
         print("未匹配到任何条目，保留旧 feed", file=sys.stderr)
         return 2
