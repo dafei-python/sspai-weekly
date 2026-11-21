@@ -40,3 +40,15 @@ jobs:
       - name: 刷新 CDN 缓存
         continue-on-error: true
         run: curl -sS "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/feed.xml" || true
+
+      - name: 同步到 gh-pages（Pages 发布）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+          git checkout main -- feed.xml
+          git add feed.xml
+          git diff --cached --quiet || git commit -m "pages: 同步 feed.xml"
+          git push origin gh-pages
+          git checkout main
