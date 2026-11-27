@@ -1,6 +1,6 @@
 # sspai-weekly
 
-自用的多个 RSS 订阅源。GitHub Actions 每天北京时间 08:30 / 20:30 生成并提交，经 GitHub Pages 发布，jsDelivr 作为备用线路。
+自用的多个 RSS 订阅源。GitHub Actions 每天北京时间 08:30 / 11:00 / 16:30 / 18:30 生成并提交，经 GitHub Pages 发布，jsDelivr 作为备用线路。
 
 | 订阅源 | 主地址（Pages） | 备用（jsDelivr） |
 | --- | --- | --- |
