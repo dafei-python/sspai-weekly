@@ -1,4 +1,4 @@
-name: 更新「本周看什么」订阅源
+name: 更新订阅源（少数派 / 喷嚏图卦 / iDaily）
 
 on:
   schedule:
@@ -7,11 +7,18 @@ on:
     - cron: "30 12 * * *"
   push:
     branches: [main]
-    paths-ignore: [feed.xml]
+    paths-ignore:
+      - feed.xml
+      - dapenti-tugua.xml
+      - idaily.xml
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: feed-update
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -23,23 +30,38 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: 生成 feed
+      - name: 生成少数派「本周看什么」
         env:
           FEED_URL: ${{ vars.FEED_URL }}
         run: python3 sspai_weekly_feed.py feed.xml
+
+      - name: 生成喷嚏图卦
+        continue-on-error: true
+        env:
+          FEED_URL: https://dafei-python.github.io/sspai-weekly/dapenti-tugua.xml
+        run: python3 dapenti_tugua_feed.py dapenti-tugua.xml
+
+      - name: 生成 iDaily 每日环球视野
+        continue-on-error: true
+        env:
+          FEED_URL: https://dafei-python.github.io/sspai-weekly/idaily.xml
+        run: python3 idaily_feed.py idaily.xml
 
       - name: 提交更新
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add feed.xml
-          git diff --cached --quiet || git commit -m "chore: 更新 feed.xml"
+          git add feed.xml dapenti-tugua.xml idaily.xml
+          git diff --cached --quiet || git commit -m "chore: 更新订阅源"
           git pull --rebase --autostash origin main
           git push
 
       - name: 刷新 CDN 缓存
         continue-on-error: true
-        run: curl -sS "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/feed.xml" || true
+        run: |
+          for f in feed.xml dapenti-tugua.xml idaily.xml; do
+            curl -sS "https://purge.jsdelivr.net/gh/${{ github.repository }}@main/$f" || true
+          done
 
       - name: 同步到 gh-pages（Pages 发布）
         run: |
@@ -47,8 +69,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin gh-pages
           git checkout -B gh-pages origin/gh-pages
-          git checkout main -- feed.xml
-          git add feed.xml
-          git diff --cached --quiet || git commit -m "pages: 同步 feed.xml"
+          git checkout main -- feed.xml dapenti-tugua.xml idaily.xml
+          git add feed.xml dapenti-tugua.xml idaily.xml
+          git diff --cached --quiet || git commit -m "pages: 同步订阅源"
           git push origin gh-pages
           git checkout main
