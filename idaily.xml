@@ -3,6 +3,7 @@
 <channel>
 <title>iDaily · 每日环球视野</title>
 <link>https://idai.ly</link>
+<atom:link href="https://dafei-python.github.io/sspai-weekly/idaily.xml" rel="self" type="application/rss+xml"/>
 <description>iDaily · 每日环球视野（每日更新）</description>
 <language>zh-CN</language>
 <lastBuildDate>Thu, 26 Nov 2026 17:59:00 +0800</lastBuildDate>
