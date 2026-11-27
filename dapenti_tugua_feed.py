@@ -134,6 +134,7 @@ def extract_article(page: str) -> tuple[str, datetime | None]:
             content = content[start:]
 
     content = re.sub(r'(href|src)="/(?!/)', rf'\1="{SITE}/', content)
+    content = content.replace("\r\n", "\n").replace("\r", "\n")
     return content.strip(), published
 
 

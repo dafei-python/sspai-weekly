@@ -117,6 +117,7 @@ def main() -> int:
             or ""
         )
         body = str(entry.get("content") or "").strip()
+        body = body.replace("\r\n", "\n").replace("\r", "\n")
         html_parts = []
         if img:
             html_parts.append(f'<figure><img src="{escape(img)}" alt="{escape(title)}"/></figure>')
